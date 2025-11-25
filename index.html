@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dr.0579</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <style>
+    :root {
+      --primary:#4169e1;
+      --primary-dark:#27409a;
+      --muted:#f3f6fa;
+      --card:#ffffff;
+    }
+
+    body { margin: 0; font-family: Arial, sans-serif; background: #fff; color: var(--primary); }
+    header { background: var(--primary); color: #fff; text-align: center; padding: 24px 0 8px 0; }
+
+    .top-ticker-container, .bottom-ticker-container {
+      background: #ffd700; color: var(--primary);
+      font-weight: bold; font-size: 18px;
+      padding: 12px 0; text-align:center;
+      overflow:hidden;
+    }
+    .top-ticker-content, #bottom-ticker { display:inline-block; white-space:nowrap; animation:scroll-left 18s linear infinite; }
+    @keyframes scroll-left { 0%{transform:translateX(100%);} 100%{transform:translateX(-100%);} }
+
+    .accordion {
+      background: var(--primary); color: #fff;
+      cursor:pointer; padding: 14px 36px; width:100%;
+      text-align:center; border:none; font-size:18px;
+      border-radius:6px; margin: 8px 0; box-sizing:border-box;
+      transition: background .25s;
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+    }
+    .accordion .arrow { position:absolute; right:14px; font-size:18px; }
+    .accordion:hover, .accordion[aria-expanded="true"] { background: var(--primary-dark); }
+
+    .panel {
+      max-height: 0; overflow: hidden;
+      transition: max-height .36s ease, padding .36s ease;
+      background: transparent; padding: 0;
+    }
+    .panel.open {
+      padding: 16px 0 28px 0;
+      max-height: 2000px;
+    }
+
+    .test-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .test-link {
+      text-decoration: none; color: #fff;
+      background-color: var(--primary);
+      padding: 6px 10px; border-radius: 4px;
+      font-size: 14px; transition: background-color .2s;
+    }
+    .test-link:hover { background: var(--primary-dark); }
+
+    /* Notes + Wikipedia */
+    .accordion-inner-card {
+      background: var(--muted);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+      margin: 10px 0;
+    }
+
+    .notes-flex {
+      display:flex; gap: 30px;
+      justify-content: center; align-items:flex-start;
+      max-width: 1400px; margin: 0 auto;
+      flex-wrap: wrap;
+    }
+
+    .wiki-section, .note-section {
+      flex: 1 1 48%;
+      background: var(--card);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+      min-width: 420px;
+    }
+
+    .wiki-section h4, .note-section h4 { margin:0 0 12px 0; color:var(--primary); text-align:center; font-size:20px; }
+
+    .wiki-search-bar { display:flex; gap:10px; margin-bottom:12px; }
+    .wiki-input { flex:1; padding:10px; font-size:14px; border-radius:6px; border:1px solid #ccc; }
+    .wiki-btn { padding:10px 14px; background:var(--primary); color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    .wiki-btn:hover { background:var(--primary-dark); }
+    iframe#wikiFrame { width:100%; height:520px; border:1px solid #dcdcdc; border-radius:8px; }
+
+    .note-section { background: #eef6ff; }
+    .note-section form { display:flex; flex-direction:column; gap:12px; }
+    .input-row.dual { display:flex; gap:10px; }
+    .input-row.dual input { flex:1; padding:10px; font-size:15px; border-radius:6px; border:1px solid #ccc; }
+    label[for="noteBox"] { font-weight:600; display:block; margin-bottom:4px; }
+    #noteBox {
+      width:100%; min-height:520px; padding:14px; font-size:16px;
+      border-radius:8px; border:1px solid #ccc;
+      background: #fff; color:#222; line-height:1.6;
+      resize:vertical;
+      outline: none;
+    }
+
+    .input-row.center { text-align:center; margin-top:4px; }
+    .note-section button { padding:10px 20px; background:var(--primary); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+    .note-section button:hover { background:var(--primary-dark); }
+    .message { display:block; margin-top:8px; font-weight:700; }
+
+    footer { background: var(--primary); color:#fff; text-align:center; padding:10px; margin-top:24px; }
+
+    @media (max-width: 900px) {
+      .notes-flex { flex-direction: column; align-items: center; gap:20px; }
+      .wiki-section, .note-section { flex-basis: 100%; min-width: unset; }
+      iframe#wikiFrame { height:420px; }
+      #noteBox { min-height: 420px; }
+    }
+
+    @media (max-width: 600px) {
+      .accordion { font-size:16px; padding:12px 36px; }
+      iframe#wikiFrame { height: 320px; }
+      #noteBox { min-height: 300px; }
+      .accordion .arrow { right:10px; }
+    }
+
+    /* small helper for visually-hidden content */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dr.0579</h1>
+    <p>"영어친구에 오신 것을 환영합니다."</p>
+  </header>
+
+  <div class="top-ticker-container" aria-hidden="true">
+    <span class="top-ticker-content">
+      Welcome to Dr.0579 — "Learning English can open up a world of opportunities for you"
+      &nbsp;·&nbsp;
+      <a href="https://www.youtube.com/channel/UC_YOUR_CHANNEL_ID" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline;">
+        최신 강의 보기 (YouTube)
+      </a>
+    </span>
+  </div>
+
+  <!-- 0579 소개 -->
+  <button class="accordion" aria-expanded="false" aria-controls="panel-intro" role="button" tabindex="0">
+    원장 소개 및 수강신청 (About Director & Enrollment)
+    <span aria-hidden="true" class="arrow">▾</span>
+  </button>
+  <div id="panel-intro" class="panel" role="region" aria-hidden="true">
+    <section>
+      <h3>원장 소개</h3>
+      <ul>
+        <li>영어독서지도사 1급, 파닉스영어교육지도사 1급</li>
+        <li>Tesol 지도사 1급, Melbourne Univ 졸, 해외거주 8년</li>
+        <li>UPS IPA 특허보유, Home and Keys 특허 영문법 보유 </li>
+        <li>전화 및 문자 상담: 010-4733-0579</li>
+        <li>이메일: 0579ohjoonyeong@gmail.com</li>
+      </ul>
+
+      <h3>특별 프로그램</h3>
+      <ul>
+        <li>특강 AI 활용 스마트폰 영어학습법</li>
+        <li>특강 AI 활용 코딩 영어 학습법 HTML, CSS, Java Script, Github</li>
+        <li>특강 English IPA 학습으로 영영사전 줄줄 읽기</li>
+        <li>온라인 학습으로 미국대학 졸업장 따기</li>
+        <li>영어일기쓰기 습관화 만들기</li>
+      </ul>
+
+      <h3>학생들을 위한 프로그램</h3>
+      <ul>
+        <li>초,중,고,대학,일반 대상 레벨테스트 / 발음교정 / 문법강의</li>
+        <li>연령별 맞춤식 학습가능</li>
+        <li>듣기, 말하기, 독해, 작문</li>
+        <li>중등/고등/모의고사 만점 쪽집게 풀이</li>
+        <li>영어 스피치 &amp; 창의력, 토론 대회 준비</li>
+      </ul>
+
+      <h3>성인들을 위한 프로그램</h3>
+      <ul>
+        <li>뉴스기사 리딩 후 토론하기, 팝송 부르기, 영화 스크립트 읽기</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- 상담 -->
+  <button class="accordion" aria-expanded="false" aria-controls="panel-consult" role="button" tabindex="0">
+    신규/학부모 상담 (Admissions & Parent Consultation)
+    <span aria-hidden="true" class="arrow">▾</span>
+  </button>
+  <div id="panel-consult" class="panel" role="region" aria-hidden="true">
+    <section>
+      <h3>학원소개영상</h3>
+      <h3>학원 프로그램 소개</h3>
+      <h3>학원 목표 및 정신</h3>
+      <h3>신규 등록 신청서</h3>
+      <h3>수강생 재등록 신청서</h3>
+      <h3>재학생 출결사항</h3>
+      <h3>재학생 수업태도 및 수업진도</h3>
+      <ol>
+        <li>유튜브 강의</li>
+        <li>모의고사 다운로드</li>
+        <li>원장 특별강의 다운로드</li>
+      </ol>
+    </section>
+  </div>
+
+  <!-- Teacher Resources -->
+  <button class="accordion" aria-expanded="false" aria-controls="panel-teachers" role="button" tabindex="0">
+    교사용 자료 (Teacher Resources)
+    <span aria-hidden="true" class="arrow">▾</span>
+  </button>
+  <div id="panel-teachers" class="panel" role="region" aria-hidden="true">
+    <div class="test-row" style="padding:12px;">
+      <a href="#" class="test-link">Guide 1</a>
+      <a href="#" class="test-link">Guide 2</a>
+    </div>
+  </div>
+ 
+  <!-- Course Materials -->
+  <button class="accordion" aria-expanded="false" aria-controls="panel-materials" role="button" tabindex="0">
+    강의 및 교재 (Course Materials)
+    <span aria-hidden="true" class="arrow">▾</span>
+  </button>
+  <div id="panel-materials" class="panel" role="region" aria-hidden="true">
+    <div class="test-row" style="padding:12px;">
+      <a href="tests/level-1/placement/index.html" class="test-link">L1 Text</a>
+      <a href="tests/level-2/placement/index.html" class="test-link">L2 Text</a>
+      <a href="tests/level-3/placement/index.html" class="test-link">L3 Text</a>
+      <a href="tests/level-4/placement/index.html" class="test-link">L4 Text</a>
+    </div>
+    <div class="test-row" style="padding:12px;">
+      <a href="tests/level-5/placement/index.html" class="test-link">L5 Text</a>
+      <a href="tests/level-6/placement/index.html" class="test-link">L6 Text</a>
+      <a href="tests/level-7/placement/index.html" class="test-link">L7 Text</a>
+      <a href="tests/level-8/placement/index.html" class="test-link">L8 Text</a>
+    </div>
+    <div class="test-row" style="padding:12px;">
+      <a href="tests/level-9/placement/index.html" class="test-link">L9 Text</a>
+      <a href="tests/level-10/placement/index.html" class="test-link">L10 Text</a>
+      <a href="tests/level-11/placement/index.html" class="test-link">L11 Text</a>
+      <a href="tests/level-12/placement/index.html" class="test-link">L12 Text</a>
+    </div>
+  </div>
+ 
+  <!-- Placement Tests -->
+  <button class="accordion" aria-expanded="false" aria-controls="panel-placement" role="button" tabindex="0">
+    레벨 테스트 (Placement Tests)
+    <span aria-hidden="true" class="arrow">▾</span>
+  </button>
+  <div id="panel-placement" class="panel" role="region" aria-hidden="true">
+    <div class="test-row">
+      <a href="tests/level-1/placement/index.html" class="test-link">L1 Placement</a>
+      <a href="tests/level-2/placement/index.html" class="test-link">L2 Placement</a>
+      <a href="tests/level-3/placement/index.html" class="test-link">L3 Placement</a>
+      <a href="tests/level-4/placement/index.html" class="test-link">L4 Placement</a>
+    </div>
+    <div class="test-row">
+      <a href="tests/level-5/placement/index.html" class="test-link">L5 Placement</a>
+      <a href="tests/level-6/placement/index.html" class="test-link">L6 Placement</a>
+      <a href="tests/level-7/placement/index.html" class="test-link">L7 Placement</a>
+      <a href="tests/level-8/placement/index.html" class="test-link">L8 Placement</a>
+    </div>
+    <div class="test-row">
+      <a href="tests/level-9/placement/index.html" class="test-link">L9 Placement</a>
+      <a href="tests/level-10/placement/index.html" class="test-link">L10 Placement</a>
+      <a href="tests/level-11/placement/index.html" class="test-link">L11 Placement</a>
+      <a href="tests/level-12/placement/index.html" class="test-link">L12 Placement</a>
+    </div>
+  </div>
+
+  <button class="accordion" aria-expanded="false" aria-controls="panel-integrated" role="button" tabindex="0">
+    통합 실력 테스트 (Integrated Skills Tests)
+    <span aria-hidden="true" class="arrow">▾</span>
+  </button>
+  <div id="panel-integrated" class="panel" role="region" aria-hidden="true">
+    <div class="test-row" style="padding:12px;">
+      <a href="#" class="test-link">Vocab</a>
+      <a href="#" class="test-link">Grammar</a>
+      <a href="#" class="test-link">Listening</a>
+      <a href="#" class="test-link">Speaking</a>
+      <a href="#" class="test-link">Reading</a>
+      <a href="#" class="test-link">Writing</a>
+    </div>
+  </div>
+
+  <!-- Notes Section -->
+  <button class="accordion" aria-expanded="false" aria-controls="panel-notes" role="button" tabindex="0">
+    학습노트 (Student Study Notes)
+    <span aria-hidden="true" class="arrow">▾</span>
+  </button>
+  <div id="panel-notes" class="panel" role="region" aria-hidden="true">
+    <div class="accordion-inner-card">
+      <div class="notes-flex">
+        <div class="wiki-section">
+          <h4>🌍 Wikipedia</h4>
+          <div class="wiki-search-bar">
+            <input type="text" id="wikiQuery" placeholder="Search Wikipedia..." class="wiki-input" aria-label="Wikipedia search" />
+            <button type="button" class="wiki-btn" id="wikiSearchBtn">Search</button>
+          </div>
+          <iframe id="wikiFrame" src="https://en.wikipedia.org/wiki/Main_Page" title="Wikipedia" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+        </div>
+
+        <div class="note-section">
+          <h4>📝 학생 학습노트 작성</h4>
+          <form id="studentNoteForm" onsubmit="return false;">
+            <div class="input-row dual">
+              <input type="text" id="from_name" required placeholder="이름 또는 닉네임" aria-label="name or nickname" />
+              <input type="email" id="email" required placeholder="이메일 주소 (@email.com)" aria-label="email address" />
+            </div>
+
+            <div class="input-row">
+              <label for="noteBox">학습노트를 작성하세요:</label>
+              <div id="noteBox" contenteditable="true" aria-multiline="true" role="textbox">여기에 노트를 작성하세요...</div>
+            </div>
+
+            <div class="input-row center">
+              <button type="button" id="sendBtn">✉️ 선생님께 제출하기</button>
+              <span id="msg" class="message" role="status" aria-live="polite"></span>
+            </div>
+            <p class="sr-only" id="noteInstructions">Please write your note. Teachers will review and send corrections by email. Do not include personal sensitive information.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-ticker-container" aria-hidden="true">
+    <div id="bottom-ticker">
+      <span><a href="https://www.cnn.com/2025/09/25/europe/russia-daytime-drone-attacks-ukraine-intl-cmd" target="_blank" rel="noopener noreferrer">Russia Drone Attacks on Ukraine</a></span>
+      <span><a href="https://www.cnn.com/2025/09/24/world/yemen-drone-attack-eilat-intl-latam" target="_blank" rel="noopener noreferrer">Yemen Drone Attack on Eilat</a></span>
+    </div>
+  </div>
+
+  <footer>
+    <p>© Dr.0579 Academy | All Rights Reserved</p>
+  </footer>
+
+  <script>
+    // Accordion behavior + keyboard accessibility
+    const accordions = document.querySelectorAll('.accordion');
+    accordions.forEach(button => {
+      // toggle function
+      const toggle = () => {
+        // close other accordions
+        accordions.forEach(b => {
+          if (b !== button) {
+            b.setAttribute('aria-expanded', 'false');
+            const p = b.nextElementSibling;
+            if (p && p.classList.contains('panel')) {
+              p.classList.remove('open');
+              p.setAttribute('aria-hidden', 'true');
+            }
+          }
+        });
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+        button.setAttribute('aria-expanded', String(!expanded));
+        const panel = button.nextElementSibling;
+        if (panel) {
+          panel.classList.toggle('open', !expanded);
+          panel.setAttribute('aria-hidden', String(expanded));
+        }
+      };
+
+      button.addEventListener('click', toggle);
+      // keyboard support: Enter/Space toggles
+      button.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+
+    // Wikipedia search
+    document.getElementById('wikiSearchBtn').addEventListener('click', () => {
+      const q = document.getElementById('wikiQuery').value.trim();
+      if (q) {
+        // load the Wikipedia page for the search term
+        document.getElementById('wikiFrame').src = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(q);
+      }
+    });
+
+    // Simple email validation
+    function validEmail(email) {
+      // basic RFC-like check
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    // Sanitize note text (return safe plain text)
+    function sanitizeNoteText(el) {
+      // Use textContent to avoid sending HTML and to strip scripts/styles
+      let raw = el.textContent || '';
+      // Remove control characters except newlines/tabs
+      raw = raw.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]+/g, '');
+      // Limit length for safety (e.g., 10000 chars)
+      if (raw.length > 10000) raw = raw.slice(0, 10000);
+      return raw.trim();
+    }
+
+    // EmailJS initialization (replace with your own user ID)
+    if (window.emailjs && typeof emailjs.init === 'function') {
+      try {
+        // WARNING: do NOT commit real keys into public repos. Replace the placeholder at deployment time.
+        emailjs.init('YOUR_EMAILJS_USER_ID'); // <-- set securely in your environment
+      } catch (e) {
+        console.warn('EmailJS init error', e);
+      }
+    }
+
+    // Send note function (client-side example)
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+      const nameEl = document.getElementById('from_name');
+      const emailEl = document.getElementById('email');
+      const noteEl = document.getElementById('noteBox');
+      const msg = document.getElementById('msg');
+
+      const name = nameEl.value.trim();
+      const email = emailEl.value.trim();
+      const text = sanitizeNoteText(noteEl);
+
+      if (!name || !email || !text) {
+        msg.textContent = '⚠️ 이름, 이메일, 노트를 모두 입력해주세요.';
+        msg.style.color = 'red';
+        return;
+      }
+      if (!validEmail(email)) {
+        msg.textContent = '⚠️ 올바른 이메일 주소를 입력해주세요.';
+        msg.style.color = 'red';
+        return;
+      }
+
+      // disable while sending
+      const sendBtn = document.getElementById('sendBtn');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+
+      try {
+        // If you want to use EmailJS (client-side), keep the call below.
+        // Note: service/template IDs are public client-side config. For more secure and robust flows,
+        // implement a server-side function and call it from the client.
+        if (window.emailjs && typeof emailjs.send === 'function') {
+          await emailjs.send('SERVICE_ID', 'TEMPLATE_ID', {
+            from_name: name,
+            email,
+            message: text,
+            time: new Date().toLocaleString()
+          });
+          msg.textContent = '✅ 제출 완료! 감사합니다.';
+          msg.style.color = 'green';
+          // reset note content
+          noteEl.textContent = '여기에 노트를 작성하세요...';
+        } else {
+          // If EmailJS is not available, fallback to showing the prepared payload to the user.
+          console.warn('EmailJS not available, payload:', { name, email, text });
+          msg.textContent = '⚠️ 이메일 전송 서비스가 준비되지 않았습니다. 관리자에게 문의하세요.';
+          msg.style.color = 'red';
+        }
+      } catch (err) {
+        console.error('Send error', err);
+        msg.textContent = '⚠️ 전송에 실패했습니다. 나중에 다시 시도해주세요.';
+        msg.style.color = 'red';
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '✉️ 선생님께 제출하기';
+      }
+    });
+  </script>
+</body>
+</html>
