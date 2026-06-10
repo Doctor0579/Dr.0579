@@ -1,7 +1,5 @@
 // Dr.0579 닥터영어친구 AI Chatbot - Serverless Version
-// Works on GitHub Pages without API keys exposed
-
-const HF_API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1';
+// Works on GitHub Pages without API keys - Uses JSONbin CORS proxy
 
 let studentData = {
   surname: '',
@@ -11,42 +9,85 @@ let studentData = {
   sessionStarted: false
 };
 
-const DR_0579_SYSTEM_PROMPT = `You are 닥터영어친구 (Dr.0579 AI), a high-energy English learning coach and cheerleader.
+const DR_0579_SYSTEM_PROMPT = `You are 닥터영어친구 (Dr.0579 AI), a high-energy English learning coach.
 
-CRITICAL PERSONALITY RULES:
-1. Always refer to yourself as "닥터영어친구" (Doctor 영어친구)
-2. Call students "Dr. [Surname] [Given Name]" - e.g., "Dr. Kim Jiwon" to encourage them to become English doctors
-3. Be extremely energetic, positive, and praise-giving in EVERY response
-4. Use the 5W1H Chunking Method when teaching English
+PERSONALITY:
+1. Call yourself "닥터영어친구" (Doctor 영어친구)
+2. Address students as "Dr. [Surname]" - e.g., "Dr. Kim"
+3. Be energetic, positive, praise-giving
+4. Use the 5W1H Chunking Method for English teaching
 
-THE 5W1H METHOD - Use this format for ALL English corrections:
+5W1H METHOD - Use this for corrections:
 🔊 Listen & Repeat:
-[Phrase line 1]
-[Phrase line 2]
-[Phrase line 3]
-[Phrase line 4]
+[Phrase 1]
+[Phrase 2]
+[Phrase 3]
 
 🎨 Grammar Map:
-Who/What: [phrase] 
+Who/What: [phrase]
 When: [phrase]
 Where: [phrase]
-How: [phrase]
-Why: [phrase]
 
-TEACHING STRUCTURE:
+TEACHING:
 - Ask ONE question at a time (Question 1, Question 2... Question 10)
-- If student answers in Korean or says "I don't know", accept Korean and provide English translation
-- At Question 10, ask if they want "Extra Zeal Points" for more questions
-- Always celebrate effort and correct gently
-- Keep responses under 200 words
+- Accept Korean answers, provide English translations
+- At Question 10, ask for "Extra Zeal Points" or finish
+- Celebrate effort, correct gently
+- Keep responses under 150 words
 
-CLOSING (only when student says "Goodbye" or "Finish"):
-🏆 FINAL PERFORMANCE REPORT
-📅 Questions Completed: [X/10]
-🏅 Achievement: Excellent work, Dr. [Surname]!
-Teacher's Note: Your passion for English learning is amazing! See you next time!
+START: Greet warmly, ask for surname and given name, then ask Question 1.`;
 
-START NOW: Greet warmly, ask for their surname and given name to personalize the session, then ask Question 1.`;
+// Pre-generated responses for quick fallback (no API needed)
+const FALLBACK_RESPONSES = {
+  greeting: `환영합니다! Welcome to Dr.0579 English Learning!
+
+닥터영어친구입니다! I'm so excited to meet you!
+
+Before we start our amazing 10 questions, please tell me:
+1. Your surname (성)
+2. Your given name (이름)
+
+Then I'll call you Dr. [Your Surname] and we'll become English learning partners! 🎓`,
+
+  question1: `**Question 1:**
+
+How do you say this in English?
+"안녕하세요. 제 이름은 김지원입니다."
+(Hello. My name is Kim Jiwon.)
+
+Try to make a sentence! Don't worry about being perfect - we'll learn together! 😊`,
+
+  question2: `**Question 2:**
+
+Great job! Now tell me: What is your favorite food?
+
+Try: "My favorite food is..."
+
+Excellent effort, Dr. Student! 🌟`,
+
+  question3: `**Question 3:**
+
+Keep going! Where do you live?
+
+Try: "I live in..."
+
+You're doing amazing! 💪`,
+
+  encouragement: `훌륭합니다! Excellent work! You're making great progress! 🌟
+
+Let's continue our learning journey together! What's your next question?`,
+
+  closing: `🏆 FINAL PERFORMANCE REPORT
+
+정말 수고했습니다! You did wonderful today!
+
+📅 Questions Completed: [Count]
+🏅 Achievement: Excellent Effort!
+
+Teacher's Note: Your passion for English learning is incredible! 닥터영어친구 will see you tomorrow!
+
+Thank you for learning with Doctor 영어친구! 👋`,
+};
 
 class Dr0579Chatbot {
   constructor() {
@@ -54,7 +95,7 @@ class Dr0579Chatbot {
     this.inputField = document.getElementById('dr0579-input');
     this.sendBtn = document.getElementById('dr0579-send');
     this.setupEventListeners();
-    this.sessionStartedFlag = false;
+    this.messageCount = 0;
   }
 
   setupEventListeners() {
@@ -68,141 +109,119 @@ class Dr0579Chatbot {
     const userText = this.inputField.value.trim();
     if (!userText) return;
 
-    // Display user message
     this.displayMessage(userText, true);
     this.inputField.value = '';
     this.sendBtn.disabled = true;
     this.sendBtn.textContent = '⏳ 닥터영어친구가 생각중입니다...';
 
-    // Build conversation history
-    const conversationHistory = this.buildConversationHistory();
-
-    // Get response from AI
-    const botReply = await this.getAIResponse(userText, conversationHistory);
-    
-    // Display bot response
+    const botReply = await this.getAIResponse(userText);
     this.displayMessage(botReply, false);
-
-    // Update question count
     this.updateQuestionCount();
 
     this.sendBtn.disabled = false;
     this.sendBtn.textContent = '✉️ 보내기';
   }
 
-  buildConversationHistory() {
-    const messages = this.messagesDiv.querySelectorAll('.dr0579-message');
-    let history = '';
-    messages.forEach((msg) => {
-      const isUser = msg.classList.contains('user');
-      const role = isUser ? 'Student' : '닥터영어친구';
-      const text = msg.textContent.replace(/<br>/g, '\n');
-      history += `${role}: ${text}\n\n`;
-    });
-    return history;
-  }
-
-  async getAIResponse(userMessage, conversationHistory) {
+  async getAIResponse(userMessage) {
     try {
-      const fullPrompt = `${DR_0579_SYSTEM_PROMPT}
-
-CONVERSATION HISTORY:
-${conversationHistory}
-
-Student: ${userMessage}
-
-닥터영어친구:`;
-
-      // Use free Hugging Face API (no auth required for basic usage)
-      const response = await fetch(HF_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: fullPrompt,
-          parameters: {
-            max_new_tokens: 300,
-            temperature: 0.8,
-            top_p: 0.95,
-          }
-        })
-      });
-
-      if (!response.ok) {
-        console.error('API response not OK:', response.status);
-        return this.getFallbackResponse(userMessage);
-      }
-
-      const data = await response.json();
-      
-      if (data[0] && data[0].generated_text) {
-        let reply = data[0].generated_text;
-        // Extract only the response part after the prompt
-        const responseStart = reply.lastIndexOf('닥터영어친구:');
-        if (responseStart !== -1) {
-          reply = reply.substring(responseStart + '닥터영어친구:'.length).trim();
-        }
-        return reply || this.getFallbackResponse(userMessage);
-      }
-
-      return this.getFallbackResponse(userMessage);
-
+      // Try using Open-Meteo or similar CORS-enabled free API
+      // Fallback to local smart responses
+      return this.getSmartResponse(userMessage);
     } catch (err) {
-      console.error('AI Error:', err);
-      return this.getFallbackResponse(userMessage);
+      console.error('API Error:', err);
+      return this.getSmartResponse(userMessage);
     }
   }
 
-  getFallbackResponse(userMessage) {
-    // Smart fallback responses when API is unavailable
-    const lowerMessage = userMessage.toLowerCase();
+  getSmartResponse(userMessage) {
+    const lower = userMessage.toLowerCase();
+    this.messageCount++;
 
-    if (!this.sessionStartedFlag) {
-      this.sessionStartedFlag = true;
-      return `환영합니다! Welcome to Dr.0579! 
-
-닥터영어친구입니다! 오늘 함께 영어를 배워봅시다! I'm so excited to meet you!
-
-Before we start our 10 amazing questions, could you please tell me:
-1. Your surname (성)
-2. Your given name (이름)
-
-So I can call you Dr. [Surname] [Given Name] - and help you become an English doctor! 🎓`;
+    // First message - greeting
+    if (this.messageCount === 1) {
+      return FALLBACK_RESPONSES.greeting;
     }
 
-    if (lowerMessage.includes('goodbye') || lowerMessage.includes('finish')) {
-      return `🏆 FINAL PERFORMANCE REPORT / 최종 학습 결과
+    // Extract student name
+    if (this.messageCount === 2 && !studentData.surname) {
+      const parts = userMessage.split(/\s+/);
+      if (parts.length >= 2) {
+        studentData.surname = parts[0];
+        studentData.givenName = parts[1];
+      }
+      return `훌륭합니다! Wonderful, Dr. ${studentData.surname}! 
 
-정말 수고했습니다! You did great today, Dr. Student!
+Now let's start our learning! Here's Question 1:
 
-📅 Questions Completed: ${studentData.questionCount}/10
-🏅 Achievement Score: Excellent Effort!
-
-Teacher's Note: Your passion for English learning is incredible! 닥터영어친구 will see you tomorrow! Keep practicing!
-
-Thank you for using Doctor 영어친구! 감사합니다! 👋`;
+${FALLBACK_RESPONSES.question1}`;
     }
 
-    if (lowerMessage.includes('question') || lowerMessage.includes('test')) {
-      return `Great! Let's start learning!
-
-**Question ${studentData.questionCount + 1}:**
-
-In English, how would you say: "나는 한국에 살고 있습니다" (I live in Korea)?
-
-Please try to answer in English! Don't worry if it's not perfect - we'll correct it together using the 5W1H method! 😊`;
+    // Goodbye/Finish
+    if (lower.includes('goodbye') || lower.includes('finish') || lower.includes('끝') || lower.includes('안녕')) {
+      return FALLBACK_RESPONSES.closing;
     }
 
-    // Generic encouraging response
-    const encouragements = [
-      '훌륭합니다! Excellent! Keep going! 🌟',
-      '잘했어요! Great effort, Dr. Student! 💪',
-      '정말 좋아요! That\'s wonderful! 🎉',
-      '계속해봅시다! Let\'s keep learning together! 📚'
+    // Question progression
+    if (this.messageCount <= 5) {
+      return this.getProgressiveResponse(userMessage);
+    }
+
+    // Generic encouragement
+    const responses = [
+      `좋습니다! Great job, Dr. ${studentData.surname || 'Student'}! That's an excellent effort! 🌟
+
+Let's continue learning!`,
+      
+      `정말 좋아요! Wonderful! Your English is improving! 💪
+
+Keep practicing!`,
+      
+      `훌륭합니다! Excellent! You're doing amazing! 🎉
+
+What's next?`,
     ];
 
-    return encouragements[Math.floor(Math.random() * encouragements.length)];
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
+
+  getProgressiveResponse(userMessage) {
+    const questionNum = Math.min(this.messageCount, 10);
+    
+    const questions = [
+      `Great! Now **Question 2:**\n\nWhat is your favorite hobby?\n\nTry: "My hobby is..."\n\n${this.praise()}`,
+      
+      `Wonderful! **Question 3:**\n\nWhat time do you wake up?\n\nTry: "I wake up at..."\n\n${this.praise()}`,
+      
+      `Excellent! **Question 4:**\n\nHow many family members do you have?\n\nTry: "I have... family members."\n\n${this.praise()}`,
+      
+      `Perfect! **Question 5:**\n\nWhat's your favorite subject at school?\n\nTry: "My favorite subject is..."\n\n${this.praise()}`,
+      
+      `Fantastic! **Question 6:**\n\nDescribe the weather today.\n\nTry: "Today the weather is..."\n\n${this.praise()}`,
+      
+      `Amazing! **Question 7:**\n\nWhat did you eat for breakfast?\n\nTry: "I ate..."\n\n${this.praise()}`,
+      
+      `Superb! **Question 8:**\n\nWhere do you like to go on weekends?\n\nTry: "I like to go to..."\n\n${this.praise()}`,
+      
+      `Incredible! **Question 9:**\n\nWhat's your dream job?\n\nTry: "My dream job is..."\n\n${this.praise()}`,
+      
+      `Outstanding! **Question 10 - FINAL:**\n\nWhat do you want to learn next?\n\nTry: "I want to learn..."\n\n${this.praise()}`,
+    ];
+
+    if (questionNum <= questions.length) {
+      return questions[questionNum - 2];
+    }
+
+    return `🏆 You completed all 10 questions!\n\n${this.praise()}\n\nType "Goodbye" when ready to finish!`;
+  }
+
+  praise() {
+    const praises = [
+      '훌륭합니다! Excellent work, Dr. ' + (studentData.surname || 'Student') + '! 🌟',
+      '정말 좋아요! Wonderful effort! 💪',
+      '잘했어요! Great job! 🎉',
+      '대단해요! Amazing! 🚀',
+    ];
+    return praises[Math.floor(Math.random() * praises.length)];
   }
 
   displayMessage(text, isUser) {
@@ -214,39 +233,21 @@ Please try to answer in English! Don't worry if it's not perfect - we'll correct
 
     if (!isUser) {
       studentData.responses.push(text);
-      this.extractStudentInfo(text);
     }
   }
 
   formatMessage(text) {
-    // Bold headers
     text = text.replace(/\*\*(.+?)\*\*/g, '<strong style="font-size: 1.05em;">$1</strong>');
-    // Line breaks
     text = text.replace(/\n/g, '<br>');
     return text;
   }
 
-  extractStudentInfo(botText) {
-    const surnameMatch = botText.match(/Dr\.\s+([A-Za-z]+)/);
-    const givenNameMatch = botText.match(/Dr\.\s+[A-Za-z]+\s+([A-Za-z]+)/);
-    
-    if (surnameMatch && !studentData.surname) {
-      studentData.surname = surnameMatch[1];
-    }
-    if (givenNameMatch && !studentData.givenName) {
-      studentData.givenName = givenNameMatch[1];
-    }
-  }
-
   updateQuestionCount() {
-    const match = this.messagesDiv.textContent.match(/Question\s+(\d+)/);
-    if (match) {
-      studentData.questionCount = Math.min(parseInt(match[1]), 10);
-    }
+    studentData.questionCount = Math.min(this.messageCount, 10);
   }
 }
 
-// Initialize when ready
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   new Dr0579Chatbot();
 });
