@@ -420,13 +420,16 @@ async function handleSend() {
     }
 
     state.turnIndex += 1;
+    // questionIndex tracks how many questions the student has answered
     state.questionIndex = Math.min(state.questionIndex + 1, OFFLINE_QUESTIONS.length - 1);
     updateProgress();
     appendBotMessage(enText, koText, corrections);
     logEvent('turn_complete', { turnIndex: state.turnIndex });
 
-    // Auto-show report after all questions answered
-    if (state.questionIndex >= OFFLINE_QUESTIONS.length - 1 && state.metrics.attempts >= OFFLINE_QUESTIONS.length) {
+    // Auto-show report when all questions have been attempted
+    // state.metrics.attempts counts every student message; OFFLINE_QUESTIONS.length = 10
+    const allQuestionsAttempted = state.metrics.attempts >= OFFLINE_QUESTIONS.length;
+    if (allQuestionsAttempted) {
       setTimeout(() => {
         appendBotMessage(
           '🎉 You have completed all the questions! Let me show your performance report…',

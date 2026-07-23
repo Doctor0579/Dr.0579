@@ -32,9 +32,20 @@ function generateUUID() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  // Fallback for older browsers
+  // Fallback: use crypto.getRandomValues when randomUUID is not available
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    // Set version 4 and variant bits per RFC 4122
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    return [...bytes].map((b, i) =>
+      ([4, 6, 8, 10].includes(i) ? '-' : '') + b.toString(16).padStart(2, '0')
+    ).join('');
+  }
+  // Last-resort fallback for very old environments (non-security use: session display only)
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
+    const r = (Math.random() * 16) | 0; // eslint-disable-line no-restricted-globals
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
