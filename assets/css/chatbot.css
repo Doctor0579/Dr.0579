@@ -1,0 +1,318 @@
+/* =========================================================
+   chatbot.css — 닥터영어친구 Dr.0579  (Phase 1)
+   Bilingual message bubbles, correction cards, report card.
+   ========================================================= */
+
+/* ── Container ──────────────────────────────────────────────── */
+#dr0579-chatbot-container {
+  background: #f3f6fa;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 6px 24px rgba(65,105,225,.10);
+  max-width: 920px;
+  margin: 12px auto;
+}
+
+/* ── Chat box layout ─────────────────────────────────────────── */
+#dr0579-chat-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+}
+
+/* ── Progress bar ────────────────────────────────────────────── */
+#dr0579-progress {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: #e8eef8;
+  border-radius: 8px;
+  border-left: 4px solid #4169e1;
+  font-size: 14px;
+  color: #27409a;
+  flex-shrink: 0;
+}
+
+/* ── Messages pane ───────────────────────────────────────────── */
+#dr0579-messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  border: 1px solid #dde3ee;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Message bubbles ─────────────────────────────────────────── */
+.dr0579-message {
+  max-width: 82%;
+  line-height: 1.55;
+  word-wrap: break-word;
+  font-size: 14.5px;
+}
+
+/* User bubble */
+.dr0579-message.user {
+  background: #4169e1;
+  color: #ffffff;
+  border-radius: 16px 16px 4px 16px;
+  padding: 10px 14px;
+  align-self: flex-end;
+  text-align: left;
+}
+
+/* Bot bubble */
+.dr0579-message.bot {
+  background: #eef2fb;
+  color: #1a1a2e;
+  border-radius: 16px 16px 16px 4px;
+  padding: 12px 14px;
+  align-self: flex-start;
+  border: 1px solid #d6dfff;
+}
+
+/* ── Language badges ─────────────────────────────────────────── */
+.lang-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-right: 6px;
+  letter-spacing: .04em;
+  vertical-align: middle;
+}
+
+.en-badge {
+  background: #4169e1;
+  color: #fff;
+}
+
+.ko-badge {
+  background: #c0392b;
+  color: #fff;
+}
+
+/* ── Bilingual message sections ──────────────────────────────── */
+.msg-en {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #c5d0e8;
+}
+
+.msg-ko {
+  font-size: 13.5px;
+  color: #444;
+}
+
+/* ── Correction cards ────────────────────────────────────────── */
+.corrections-block {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #d6dfff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.correction-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.correction-grammar    { background: #fff8e1; border-left: 3px solid #f1c40f; }
+.correction-vocabulary { background: #e8f5e9; border-left: 3px solid #27ae60; }
+.correction-collocation{ background: #fce4ec; border-left: 3px solid #e91e63; }
+.correction-expression { background: #e3f2fd; border-left: 3px solid #2196f3; }
+
+.correction-label {
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #555;
+}
+
+.correction-text {
+  color: #333;
+  line-height: 1.45;
+}
+
+/* ── Input row ───────────────────────────────────────────────── */
+#dr0579-input-row {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#dr0579-input {
+  flex: 1;
+  padding: 10px 13px;
+  border: 1.5px solid #b0bee8;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  outline: none;
+  transition: border-color .2s;
+}
+
+#dr0579-input:focus {
+  border-color: #4169e1;
+  box-shadow: 0 0 0 3px rgba(65,105,225,.15);
+}
+
+#dr0579-send {
+  padding: 10px 20px;
+  background: #4169e1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: background .2s;
+  white-space: nowrap;
+}
+
+#dr0579-send:hover:not(:disabled) {
+  background: #27409a;
+}
+
+#dr0579-send:disabled {
+  background: #9eaac8;
+  cursor: not-allowed;
+}
+
+/* ── Accessibility: focus ring ───────────────────────────────── */
+#dr0579-send:focus-visible {
+  outline: 3px solid #ffd700;
+  outline-offset: 2px;
+}
+
+/* ── Report card ─────────────────────────────────────────────── */
+#dr0579-report-card {
+  display: none;
+  margin-top: 18px;
+}
+
+.report-card {
+  background: linear-gradient(135deg, #eef2fb 0%, #fefefe 100%);
+  border: 2px solid #4169e1;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 28px rgba(65,105,225,.12);
+}
+
+.report-header {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #27409a;
+  margin-bottom: 10px;
+  letter-spacing: .01em;
+}
+
+.report-student {
+  text-align: center;
+  font-size: 17px;
+  color: #4169e1;
+  margin-bottom: 18px;
+}
+
+.report-scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.score-item {
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.score-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #666;
+  font-weight: 600;
+}
+
+.score-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #27409a;
+}
+
+.score-star {
+  font-size: 15px;
+  color: #f39c12;
+}
+
+.report-section {
+  margin-bottom: 16px;
+}
+
+.report-section-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #27409a;
+  margin-bottom: 8px;
+}
+
+.report-list {
+  margin: 0;
+  padding-left: 22px;
+  color: #333;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.report-encouragement {
+  background: linear-gradient(90deg, #4169e1, #6a8cff);
+  color: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-top: 16px;
+  line-height: 1.65;
+  font-size: 14.5px;
+}
+
+.report-footer {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #888;
+  letter-spacing: .04em;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #dr0579-chat-box { height: 500px; }
+  .dr0579-message  { max-width: 92%; }
+}
+
+@media (max-width: 600px) {
+  #dr0579-chat-box { height: 420px; }
+  #dr0579-input    { font-size: 13px; }
+  #dr0579-send     { padding: 10px 14px; font-size: 13px; }
+  .report-scores   { grid-template-columns: 1fr 1fr; }
+  .report-header   { font-size: 18px; }
+}
