@@ -129,6 +129,14 @@
       height: 600px;
     }
 
+    #dr0579-progress {
+      margin-bottom: 15px;
+      padding: 15px;
+      background: #f0f4f8;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+
     #dr0579-messages {
       flex: 1;
       overflow-y: auto;
@@ -247,7 +255,13 @@
   <div id="panel-ai" class="panel" role="region" aria-hidden="true">
     <div id="dr0579-chatbot-container">
       <div id="dr0579-chat-box">
+        <!-- Progress Bar -->
+        <div id="dr0579-progress" role="status" aria-live="polite" aria-label="Learning progress"></div>
+        
+        <!-- Messages Container -->
         <div id="dr0579-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
+        
+        <!-- Input Area -->
         <div id="dr0579-input-row">
           <input 
             type="text" 
@@ -269,7 +283,7 @@
   <div id="panel-peacemaker" class="panel" role="region" aria-hidden="true">
     <div class="accordion-inner-card" style="padding: 12px;">
       <p style="text-align: center; font-size: 16px; margin: 15px 0;">
-        독창적인 <strong>피스메이커 영어 교수법</strong>을 배워보세요 — 학생들이 영어로 사고하고 6발 총알 시스템을 이용해 "총알 속도"로 말하도록 가르치는 혁신적인 방법입니다.
+        독창적인 <strong>피스메이커 영어 교수법</strong>을 배워보세요 — 학생들이 영어로 사고하고 6발 총알 시스템을 이용해 "총알 속도"로 말하도록 합니다.
       </p>
       <div style="text-align: center; margin: 20px 0;">
         <a href="peacemaker.html" class="test-link" style="display: inline-block; padding: 10px 20px; font-size: 16px;">📖 피스메이커 이론 자세히 알아보기 →</a>
@@ -826,8 +840,8 @@
     <p>© Dr.0579 Academy | All Rights Reserved</p>
   </footer>
 
-  <!-- Load Dr.0579 Chatbot Script -->
-  <script src="gemini-chatbot.js"></script>
+  <!-- Load Advanced Dr.0579 Chatbot Script -->
+  <script src="dr-0579-advanced-chatbot.js"></script>
 
   <script>
     // Accordion behavior + keyboard accessibility
