@@ -36,14 +36,15 @@ function generateUUID() {
   if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
-    // Set version 4 and variant bits per RFC 4122
+    // Set version 4 bits (high nibble of byte 6 = 0100)
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    // Set variant bits (high 2 bits of byte 8 = 10)
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    return [...bytes].map((b, i) =>
-      ([4, 6, 8, 10].includes(i) ? '-' : '') + b.toString(16).padStart(2, '0')
-    ).join('');
+    // Format as xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
   }
-  // crypto API unavailable — return a timestamp-based placeholder.
+  // crypto API unavailable -- return a timestamp-based placeholder.
   // This browser is too old to support this application securely.
   return 'no-crypto-' + Date.now().toString(36) + '-' + (performance.now() * 1000 | 0).toString(36);
 }
