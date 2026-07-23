@@ -82,9 +82,9 @@ jobs:
             'ghp_[A-Za-z0-9]{36}'
             'ghs_[A-Za-z0-9]{36}'
             'ghu_[A-Za-z0-9]{36}'
-            'api_key\s*=\s*["\x27][A-Za-z0-9._-]{16,}'
-            'apiKey\s*:\s*["\x27][A-Za-z0-9._-]{16,}'
-            'Bearer\s+[A-Za-z0-9+/=._-]{32,}'
+            'api_key[[:space:]]*=[[:space:]]*["'"'"'][A-Za-z0-9._-]{16,}'
+            'apiKey[[:space:]]*:[[:space:]]*["'"'"'][A-Za-z0-9._-]{16,}'
+            'Bearer[[:space:]]+[A-Za-z0-9+/=._-]{32,}'
           )
 
           for pattern in "${PATTERNS[@]}"; do

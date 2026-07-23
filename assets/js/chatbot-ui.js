@@ -242,7 +242,7 @@ function showPerformanceReport() {
 
   const name = state.studentName || 'Student';
   const attempts = state.metrics.attempts;
-  const questionsAnswered = Math.min(state.questionIndex + 1, OFFLINE_QUESTIONS.length);
+  const questionsAnswered = Math.min(state.questionIndex, OFFLINE_QUESTIONS.length);
 
   // Build encouraging report HTML
   const reportHtml = `
@@ -420,16 +420,15 @@ async function handleSend() {
     }
 
     state.turnIndex += 1;
-    // questionIndex tracks how many questions the student has answered
-    state.questionIndex = Math.min(state.questionIndex + 1, OFFLINE_QUESTIONS.length - 1);
+    // questionIndex tracks how many question-answer pairs have been completed.
+    // Incrementing without capping lets us reliably detect end-of-curriculum.
+    state.questionIndex += 1;
     updateProgress();
     appendBotMessage(enText, koText, corrections);
     logEvent('turn_complete', { turnIndex: state.turnIndex });
 
-    // Auto-show report when all questions have been attempted
-    // state.metrics.attempts counts every student message; OFFLINE_QUESTIONS.length = 10
-    const allQuestionsAttempted = state.metrics.attempts >= OFFLINE_QUESTIONS.length;
-    if (allQuestionsAttempted) {
+    // Auto-show report once the student has answered all curriculum questions
+    if (state.questionIndex >= OFFLINE_QUESTIONS.length) {
       setTimeout(() => {
         appendBotMessage(
           '🎉 You have completed all the questions! Let me show your performance report…',

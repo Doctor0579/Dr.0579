@@ -43,12 +43,9 @@ function generateUUID() {
       ([4, 6, 8, 10].includes(i) ? '-' : '') + b.toString(16).padStart(2, '0')
     ).join('');
   }
-  // Last-resort fallback for very old environments (non-security use: session display only)
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0; // eslint-disable-line no-restricted-globals
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  // crypto API unavailable — return a timestamp-based placeholder.
+  // This browser is too old to support this application securely.
+  return 'no-crypto-' + Date.now().toString(36) + '-' + (performance.now() * 1000 | 0).toString(36);
 }
 
 /* ─── Input validation ───────────────────────────────────────────────── */
