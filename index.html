@@ -4,7 +4,15 @@
   <meta charset="UTF-8" />
   <title>Dr.0579</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <!-- Security meta tags -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src https://en.wikipedia.org; connect-src 'self';" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <!-- Chatbot styles -->
+  <link rel="stylesheet" href="assets/css/chatbot.css" />
+  <!-- EmailJS (note: service/template IDs are public client-side config; no secret keys here) -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"
+          crossorigin="anonymous"></script>
   <style>
     :root {
       --primary:#4169e1;
@@ -107,103 +115,7 @@
     .note-section button:hover { background:var(--primary-dark); }
     .message { display:block; margin-top:8px; font-weight:700; }
 
-    /* Dr.0579 AI Chatbot Styles */
-    #dr0579-chatbot-container {
-      background: var(--muted);
-      border-radius: 12px;
-      padding: 22px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-      margin: 10px 0;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #dr0579-chat-box {
-      background: var(--card);
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-      display: flex;
-      flex-direction: column;
-      height: 600px;
-    }
-
-    #dr0579-progress {
-      margin-bottom: 15px;
-      padding: 15px;
-      background: #f0f4f8;
-      border-radius: 8px;
-      border-left: 4px solid var(--primary);
-    }
-
-    #dr0579-messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 12px;
-      background: #f9f9f9;
-    }
-
-    .dr0579-message {
-      margin: 8px 0;
-      padding: 10px 12px;
-      border-radius: 8px;
-      line-height: 1.5;
-      word-wrap: break-word;
-    }
-
-    .dr0579-message.user {
-      background: var(--primary);
-      color: #fff;
-      margin-left: 20px;
-      text-align: right;
-      max-width: 80%;
-      margin-left: auto;
-    }
-
-    .dr0579-message.bot {
-      background: #e0e0e0;
-      color: #222;
-      margin-right: 20px;
-      max-width: 80%;
-    }
-
-    #dr0579-input-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    #dr0579-input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: Arial, sans-serif;
-    }
-
-    #dr0579-send {
-      padding: 10px 20px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.2s;
-    }
-
-    #dr0579-send:hover {
-      background: var(--primary-dark);
-    }
-
-    #dr0579-send:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
+    /* Dr.0579 AI Chatbot Styles are in assets/css/chatbot.css */
 
     footer { background: var(--primary); color:#fff; text-align:center; padding:10px; margin-top:24px; }
 
@@ -212,8 +124,6 @@
       .wiki-section, .note-section { flex-basis: 100%; min-width: unset; }
       iframe#wikiFrame { height:420px; }
       #noteBox { min-height: 420px; }
-      #dr0579-chat-box { height: 500px; }
-      .dr0579-message.user, .dr0579-message.bot { max-width: 90%; }
     }
 
     @media (max-width: 600px) {
@@ -221,8 +131,6 @@
       iframe#wikiFrame { height: 320px; }
       #noteBox { min-height: 300px; }
       .accordion .arrow { right:10px; }
-      #dr0579-chat-box { height: 400px; }
-      #dr0579-input { font-size: 12px; }
     }
 
     /* small helper for visually-hidden content */
@@ -255,23 +163,34 @@
   <div id="panel-ai" class="panel" role="region" aria-hidden="true">
     <div id="dr0579-chatbot-container">
       <div id="dr0579-chat-box">
-        <!-- Progress Bar -->
+        <!-- Progress indicator -->
         <div id="dr0579-progress" role="status" aria-live="polite" aria-label="Learning progress"></div>
-        
+
         <!-- Messages Container -->
         <div id="dr0579-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
-        
+
         <!-- Input Area -->
         <div id="dr0579-input-row">
-          <input 
-            type="text" 
-            id="dr0579-input" 
-            placeholder="메시지를 입력하세요... (Type your message)" 
+          <input
+            type="text"
+            id="dr0579-input"
+            placeholder="메시지를 입력하세요… (Type your message here)"
             aria-label="Chat input"
+            maxlength="1000"
+            autocomplete="off"
           />
-          <button id="dr0579-send" type="button">✉️ 보내기</button>
+          <button id="dr0579-send" type="button">✉️ 보내기 Send</button>
         </div>
       </div>
+
+      <!-- Performance report card (shown at end of session) -->
+      <div id="dr0579-report-card" aria-live="polite"></div>
+
+      <!-- Privacy notice -->
+      <p style="font-size:12px;color:#888;text-align:center;margin-top:8px;">
+        닥터영어친구는 학습 피드백 및 보안 목적으로 세션 활동을 기록합니다. 개인 민감 정보를 입력하지 마세요.<br>
+        Dr.0579 records session activity for learning feedback and security monitoring. Do not share sensitive personal information.
+      </p>
     </div>
   </div>
 
@@ -840,8 +759,10 @@
     <p>© Dr.0579 Academy | All Rights Reserved</p>
   </footer>
 
-  <!-- Load Advanced Dr.0579 Chatbot Script -->
-  <script src="dr-0579-advanced-chatbot.js"></script>
+  <!-- Dr.0579 chatbot modules (Phase 1: secure adapter pattern) -->
+  <script src="assets/js/security.js"></script>
+  <script src="assets/js/api-client.js"></script>
+  <script src="assets/js/chatbot-ui.js"></script>
 
   <script>
     // Accordion behavior + keyboard accessibility
